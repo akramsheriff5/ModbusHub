@@ -18,6 +18,7 @@ export default function RegisterSetup() {
     is_monitored: true,
     min_value: '',
     max_value: '',
+    read_write: 'read_write',
   });
   const [editingRegisterId, setEditingRegisterId] = useState(null);
   const [currentEditData, setCurrentEditData] = useState(null);
@@ -54,6 +55,7 @@ export default function RegisterSetup() {
           is_monitored: true,
           min_value: '',
           max_value: '',
+          read_write: 'read_write',
         });
       },
     }
@@ -125,6 +127,7 @@ export default function RegisterSetup() {
       is_monitored: register.is_monitored,
       min_value: register.min_value ?? '',
       max_value: register.max_value ?? '',
+      read_write: register.read_write ?? 'read_write',
     });
   };
 
@@ -326,6 +329,21 @@ export default function RegisterSetup() {
                   />
                 </div>
                 <div>
+                  <label htmlFor="readWrite" className="block text-sm font-medium text-gray-700">Read/Write Access</label>
+                  <select
+                    id="readWrite"
+                    name="read_write"
+                    value={isAddingRegister ? newRegister.read_write : currentEditData?.read_write || 'read_write'}
+                    onChange={isAddingRegister ? (e) => setNewRegister({ ...newRegister, read_write: e.target.value }) : handleEditChange}
+                    required
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  >
+                    <option value="read_write">Read & Write</option>
+                    <option value="read_only">Read Only</option>
+                    <option value="write_only">Write Only</option>
+                  </select>
+                </div>
+                <div>
                   <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
                   <textarea
                     id="description"
@@ -402,6 +420,7 @@ export default function RegisterSetup() {
                     Address: {register.address} &bull; Data Type: {register.data_type} &bull; Scaling: {register.scaling_factor} &bull; Unit: {register.unit || '-'}
                     {register.min_value !== null && register.min_value !== undefined && register.min_value !== '' && ` • Min: ${register.min_value}`}
                     {register.max_value !== null && register.max_value !== undefined && register.max_value !== '' && ` • Max: ${register.max_value}`}
+                    <span className="text-sm text-gray-500"> • Access: {register.read_write?.replace('_', ' ')}</span>
                   </div>
                   <div className="text-sm text-gray-500">{register.description}</div>
                   <div className="text-xs text-gray-400 mt-1">Monitoring: {register.is_monitored ? 'Enabled' : 'Disabled'}</div>

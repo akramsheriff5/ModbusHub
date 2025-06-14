@@ -29,6 +29,7 @@ class Register(db.Model):
     is_monitored = db.Column(db.Boolean, default=True)
     min_value = db.Column(db.Float, nullable=True)
     max_value = db.Column(db.Float, nullable=True)
+    read_write = db.Column(db.String(20), default='read_write', nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     plc_id = db.Column(db.Integer, db.ForeignKey('plc.id'), nullable=False)
 

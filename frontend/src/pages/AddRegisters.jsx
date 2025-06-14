@@ -16,6 +16,7 @@ export default function AddRegisters() {
     description: '',
     min_value: '',
     max_value: '',
+    read_write: 'read_write',
   });
   const [error, setError] = useState('');
 
@@ -184,6 +185,23 @@ export default function AddRegisters() {
               className="w-full rounded-lg border border-gray-200 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
               placeholder="Enter maximum value"
             />
+          </div>
+          <div>
+            <label htmlFor="read_write" className="block text-sm font-medium text-gray-700 mb-1">
+              Read/Write Access
+            </label>
+            <select
+              id="read_write"
+              name="read_write"
+              value={formData.read_write}
+              onChange={handleChange}
+              required
+              className="w-full rounded-lg border border-gray-200 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+            >
+              <option value="read_write">Read & Write</option>
+              <option value="read_only">Read Only</option>
+              <option value="write_only">Write Only</option>
+            </select>
           </div>
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">

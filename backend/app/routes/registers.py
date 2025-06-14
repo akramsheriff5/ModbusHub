@@ -8,6 +8,8 @@ from pymodbus.exceptions import ConnectionException
 import threading
 import time
 import struct
+from pymodbus.payload import BinaryPayloadDecoder
+from pymodbus.constants import Endian
 
 registers_bp = Blueprint('registers', __name__)
 
@@ -22,9 +24,44 @@ def read_register(client, register):
         elif register.data_type == 'int32':
             result = client.read_holding_registers(register.address, 2)
             value = (result.registers[0] << 16 | result.registers[1]) * register.scaling_factor
+        # elif register.data_type == 'float':
+        #     result = client.read_holding_registers(register.address, 2)
+        #     value = struct.unpack('>f', struct.pack('>HH', result.registers[0], result.registers[1]))[0] * register.scaling_factor
+        
         elif register.data_type == 'float':
+            
             result = client.read_holding_registers(register.address, 2)
-            value = struct.unpack('>f', struct.pack('>HH', result.registers[0], result.registers[1]))[0] * register.scaling_factor
+    
+            # Try the most common formats first
+            # formats = [
+            #     ('>f', '>HH', [result.registers[0], result.registers[1]]),  # ABCD
+                # ('>f', '>HH', [result.registers[1], result.registers[0]]),  # CDAB
+            #     ('<f', '<HH', [result.registers[0], result.registers[1]]),  # BADC
+            #     ('<f', '<HH', [result.registers[1], result.registers[0]])   # DCBA
+            # ]
+            
+            # for float_fmt, pack_fmt, regs in formats:
+            #     try:
+            #         value = struct.unpack("'>f'", struct.pack("'>HH'", *[result.registers[1], result.registers[0]]))[0]
+            #         if not (value != value or abs(value) == float('inf')):  # Check for NaN/inf
+            #             value *= register.scaling_factor
+            #             return value
+            #             # print(value,";;;;;;;;;;;;;;",float_fmt, pack_fmt, regs )
+            #     except:
+            #         continue
+            value = struct.unpack('>f', struct.pack('>HH', *[result.registers[1], result.registers[0]]))[0]
+            if not (value != value or abs(value) == float('inf')):  # Check for NaN/inf
+                value *= register.scaling_factor
+                return value
+
+            # result = client.read_holding_registers(register.address, 2)
+            
+            # decoder = BinaryPayloadDecoder.fromRegisters(
+            #     result.registers, 
+            #     byteorder=Endian.Big,    # or Endian.Little
+            #     wordorder=Endian.Big     # or Endian.Little
+            # )
+            # value = decoder.decode_32bit_float() * register.scaling_factor
         return value
     except Exception as e:
         print(f"Error reading register {register.name}: {str(e)}")
@@ -57,11 +94,33 @@ def monitor_plc(app, plc_id):
                             'max_value':register.max_value
                         }
                 
-                socketio.emit('register_update', {
-                    'plc_id': plc_id,
-                    'data': data,
-                    'og':1
-                })
+                # socketio.emit('register_update', {
+                #     'plc_id': plc_id,
+                #     'data': data,
+                #     'og':1
+                # })
+                obj =    {
+                        "plc_id": 3,
+                        "data": {
+                            "4": {
+                                "name": "OUTPUT VOLTAGE",
+                                "value": 146,
+                                "unit": "1",
+                                "min_value": "0.0",
+                                "max_value": "415.0"
+                            },
+                            "5": {
+                                "name": "FREQUENCY(HZ)",
+                                "value": 33,
+                                "unit": "1",
+                                "min_value": "0.0",
+                                "max_value": "50.0"
+                            }
+                        },
+                        "og": 1
+                    }
+                
+                socketio.emit('register_update', obj)
                 
                 time.sleep(1)  # Update every second
                 
@@ -86,7 +145,8 @@ def get_registers(plc_id):
         'description': reg.description,
         'is_monitored': reg.is_monitored,
         'min_value': reg.min_value,
-        'max_value': reg.max_value
+        'max_value': reg.max_value,
+        'read_write': reg.read_write
     } for reg in registers])
 
 @registers_bp.route('/plcs/<int:plc_id>/registers', methods=['POST'])
@@ -105,6 +165,7 @@ def create_register(plc_id):
         is_monitored=data.get('is_monitored', True),
         min_value=data.get('min_value'),
         max_value=data.get('max_value'),
+        read_write=data.get('read_write', 'read_write'),
         plc_id=plc_id
     )
     
@@ -121,7 +182,8 @@ def create_register(plc_id):
         'description': register.description,
         'is_monitored': register.is_monitored,
         'min_value': register.min_value,
-        'max_value': register.max_value
+        'max_value': register.max_value,
+        'read_write': register.read_write
     }), 201
 
 @registers_bp.route('/plcs/<int:plc_id>/registers/<int:register_id>', methods=['PUT'])
@@ -140,6 +202,7 @@ def update_register(plc_id, register_id):
     register.is_monitored = data.get('is_monitored', register.is_monitored)
     register.min_value = data.get('min_value', register.min_value)
     register.max_value = data.get('max_value', register.max_value)
+    register.read_write = data.get('read_write', register.read_write)
     
     db.session.commit()
     
@@ -153,7 +216,8 @@ def update_register(plc_id, register_id):
         'description': register.description,
         'is_monitored': register.is_monitored,
         'min_value': register.min_value,
-        'max_value': register.max_value
+        'max_value': register.max_value,
+        'read_write': register.read_write
     })
 
 @registers_bp.route('/plcs/<int:plc_id>/registers/<int:register_id>', methods=['DELETE'])

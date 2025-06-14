@@ -32,7 +32,10 @@ export default function Layout({ children }) {
     <div className="min-h-screen bg-[#F8FAFC] flex font-sans">
       {/* Sidebar */}
       <aside className={`flex flex-col h-screen w-64 bg-white border-r border-gray-200 transition-transform duration-300 ${sidebarOpen ? '' : '-translate-x-full'} z-40 fixed lg:static`}>
-        <div className="flex items-center h-16 px-6 font-bold text-xl text-gray-900 border-b border-gray-100">Modbus Control</div>
+        <div className="flex items-center h-16 px-6 font-bold text-xl text-gray-900 border-b border-gray-100">
+          <img src="/logo.jpeg" alt="Logo" className="h-8 w-auto mr-3" />
+           
+        </div>
         <nav className="flex-1 px-4 py-6 overflow-y-auto">
           <div className="text-xs text-gray-400 font-semibold mb-2 pl-2">Main Navigation</div>
           <ul className="space-y-1">

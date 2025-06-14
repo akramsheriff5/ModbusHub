@@ -254,7 +254,21 @@ export default function Dashboard() {
             <div className="mb-8 p-6 bg-white rounded-2xl shadow-lg">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Live Gauges</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {registers.filter(reg => reg.is_monitored).map(register => (
+                {registers.filter(reg => reg.is_monitored).map(register => {
+                  
+                  const min = registerValues[register.id]?.min_value ?? 0;
+                  const max = registerValues[register.id]?.max_value ?? 100;
+
+                  // Calculate ranges
+                  const range = max - min;
+                  const oneThird = range / 3;
+
+                  const subArcs = [
+                    { limit: min + oneThird, color: '#5BE12C' },     // Green
+                    { limit: min + 2 * oneThird, color: '#F5CD19' }, // Yellow
+                    { limit: max, color: '#EA4228' }                 // Red
+                  ];
+                  return (
                   <div
                     key={register.id}
                     className="bg-white rounded-xl shadow-md p-4 border border-gray-100 flex flex-col items-center justify-center text-center"
@@ -269,11 +283,7 @@ export default function Dashboard() {
                         width: 0.2,
                         gradient: true,
                         colorArray: ['#5BE12C', '#F5CD19', '#EA4228'], // Green, Yellow, Red
-                        subArcs: [
-                          // { limit: 33, color: '#5BE12C' },
-                          // { limit: 66, color: '#F5CD19' },
-                          // { limit: 100, color: '#EA4228' },
-                        ]
+                        subArcs: subArcs
                       }}
                       pointer={{ type: "blob", animationDuration: 300 }}
                       labels={{
@@ -294,7 +304,7 @@ export default function Dashboard() {
                       Addr: {register.address} | Type: {register.data_type}
                     </div>
                   </div>
-                ))}
+                )})}
               </div>
             </div>
           )}
@@ -322,6 +332,9 @@ export default function Dashboard() {
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
                         Address: {register.address} | Type: {register.data_type} | Scale: {register.scaling_factor}
+                        {register.min_value !== null && register.min_value !== undefined && register.min_value !== '' && ` | Min: ${register.min_value}`}
+                        {register.max_value !== null && register.max_value !== undefined && register.max_value !== '' && ` | Max: ${register.max_value}`}
+                        <span className="text-xs text-gray-500"> | Access: {register.read_write?.replace('_', ' ')}</span>
                       </p>
                     </div>
                     <div className="text-right">
