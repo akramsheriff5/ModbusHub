@@ -270,9 +270,9 @@ export default function Dashboard() {
                         gradient: true,
                         colorArray: ['#5BE12C', '#F5CD19', '#EA4228'], // Green, Yellow, Red
                         subArcs: [
-                          { limit: 33, color: '#5BE12C' },
-                          { limit: 66, color: '#F5CD19' },
-                          { limit: 100, color: '#EA4228' },
+                          // { limit: 33, color: '#5BE12C' },
+                          // { limit: 66, color: '#F5CD19' },
+                          // { limit: 100, color: '#EA4228' },
                         ]
                       }}
                       pointer={{ type: "blob", animationDuration: 300 }}
@@ -287,8 +287,8 @@ export default function Dashboard() {
                           style: { fontSize: '10px', fill: '#666' },
                         },
                       }}
-                      maxValue={100} // Assuming 0-100 scale for gauges
-                      minValue={0}
+                      maxValue={registerValues[register.id]?.max_value || 100} // Assuming 0-100 scale for gauges
+                      minValue={registerValues[register.id]?.min_value || 0}
                     />
                     <div className="mt-2 text-xs text-gray-500">
                       Addr: {register.address} | Type: {register.data_type}

@@ -52,12 +52,15 @@ def monitor_plc(app, plc_id):
                         data[register.id] = {
                             'name': register.name,
                             'value': value,
-                            'unit': register.unit
+                            'unit': register.unit,
+                            'min_value':register.min_value,
+                            'max_value':register.max_value
                         }
                 
                 socketio.emit('register_update', {
                     'plc_id': plc_id,
-                    'data': data
+                    'data': data,
+                    'og':1
                 })
                 
                 time.sleep(1)  # Update every second
@@ -81,7 +84,9 @@ def get_registers(plc_id):
         'scaling_factor': reg.scaling_factor,
         'unit': reg.unit,
         'description': reg.description,
-        'is_monitored': reg.is_monitored
+        'is_monitored': reg.is_monitored,
+        'min_value': reg.min_value,
+        'max_value': reg.max_value
     } for reg in registers])
 
 @registers_bp.route('/plcs/<int:plc_id>/registers', methods=['POST'])
@@ -97,6 +102,9 @@ def create_register(plc_id):
         scaling_factor=data.get('scaling_factor', 1.0),
         unit=data.get('unit'),
         description=data.get('description'),
+        is_monitored=data.get('is_monitored', True),
+        min_value=data.get('min_value'),
+        max_value=data.get('max_value'),
         plc_id=plc_id
     )
     
@@ -111,7 +119,9 @@ def create_register(plc_id):
         'scaling_factor': register.scaling_factor,
         'unit': register.unit,
         'description': register.description,
-        'is_monitored': register.is_monitored
+        'is_monitored': register.is_monitored,
+        'min_value': register.min_value,
+        'max_value': register.max_value
     }), 201
 
 @registers_bp.route('/plcs/<int:plc_id>/registers/<int:register_id>', methods=['PUT'])
@@ -128,6 +138,8 @@ def update_register(plc_id, register_id):
     register.unit = data.get('unit', register.unit)
     register.description = data.get('description', register.description)
     register.is_monitored = data.get('is_monitored', register.is_monitored)
+    register.min_value = data.get('min_value', register.min_value)
+    register.max_value = data.get('max_value', register.max_value)
     
     db.session.commit()
     
@@ -139,7 +151,9 @@ def update_register(plc_id, register_id):
         'scaling_factor': register.scaling_factor,
         'unit': register.unit,
         'description': register.description,
-        'is_monitored': register.is_monitored
+        'is_monitored': register.is_monitored,
+        'min_value': register.min_value,
+        'max_value': register.max_value
     })
 
 @registers_bp.route('/plcs/<int:plc_id>/registers/<int:register_id>', methods=['DELETE'])

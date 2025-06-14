@@ -35,7 +35,8 @@ def monitor_registers(plc_id):
             
             socketio.emit('register_update', {
                 'plc_id': plc_id,
-                'data': data
+                'data': data,
+                'og':3
             })
             
             time.sleep(1)  # Update every second
