@@ -139,7 +139,7 @@ export default function Layout({ children }) {
             </Transition>
           </Menu>
         </header>
-        <main className="p-2 bg-[#F8FAFC] min-h-[calc(100vh-4rem)]">
+        <main className="py-10 px-8 bg-[#F8FAFC] h-[calc(100vh-4rem)] overflow-y-auto">
           <div className="max-w-7xl mx-auto">
             {children}
           </div>
